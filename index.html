@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>尼康滤镜设置库</title>
+  <style>
+    :root {
+      --bg: #0f1217;
+      --bg-soft: #171b22;
+      --panel: rgba(25, 30, 39, 0.82);
+      --panel-strong: #1c222d;
+      --line: rgba(255, 255, 255, 0.08);
+      --line-strong: rgba(255, 255, 255, 0.15);
+      --text: #f4f2ea;
+      --muted: #a7afb9;
+      --accent: #f3b33d;
+      --accent-soft: rgba(243, 179, 61, 0.16);
+      --danger: #ff7373;
+      --success: #6fd3a7;
+      --shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+      --font-ui: "Bahnschrift", "Aptos", "Microsoft YaHei UI", "PingFang SC", sans-serif;
+      --font-display: "Segoe UI Variable Display", "Trebuchet MS", "Microsoft YaHei UI", sans-serif;
+      --font-mono: "Cascadia Code", "Consolas", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(243, 179, 61, 0.18), transparent 24%),
+        radial-gradient(circle at 82% 18%, rgba(111, 211, 167, 0.11), transparent 18%),
+        linear-gradient(180deg, #12161d 0%, #0d1015 100%);
+      color: var(--text);
+      font-family: var(--font-ui);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.35), transparent 82%);
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+    }
+
+    .shell {
+      width: min(1380px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.9fr);
+      gap: 22px;
+      margin-bottom: 22px;
+    }
+
+    .hero-card,
+    .stats-card,
+    .toolbar,
+    .form-card,
+    .library-card,
+    .insight-card,
+    .dialog-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card {
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+      min-height: 260px;
+      background:
+        linear-gradient(135deg, rgba(243, 179, 61, 0.16), transparent 55%),
+        linear-gradient(180deg, rgba(28, 34, 45, 0.92), rgba(18, 22, 29, 0.96));
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      right: -64px;
+      top: 24px;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      border: 1px solid rgba(243, 179, 61, 0.16);
+      box-shadow:
+        0 0 0 26px rgba(243, 179, 61, 0.07),
+        0 0 0 58px rgba(243, 179, 61, 0.04);
+    }
+
+    .eyeline {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .eyeline::before {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 18px rgba(243, 179, 61, 0.55);
+    }
+
+    h1 {
+      margin: 20px 0 14px;
+      max-width: 680px;
+      font-family: var(--font-display);
+      font-size: clamp(32px, 5vw, 58px);
+      line-height: 1.02;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-copy {
+      max-width: 620px;
+      margin: 0 0 24px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.72;
+    }
+
+    .hero-actions,
+    .toolbar-actions,
+    .chip-row,
+    .card-actions,
+    .dialog-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 46px;
+      padding: 0 18px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(180deg, #ffc85f, #e6a730);
+      color: #17130d;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .stats-card {
+      padding: 24px;
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 30px;
+      letter-spacing: -0.04em;
+    }
+
+    .stat-note {
+      margin-top: 6px;
+      color: #d5c4a1;
+      font-size: 12px;
+    }
+
+    .toolbar {
+      padding: 18px;
+      margin-bottom: 22px;
+    }
+
+    .toolbar-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(150px, 0.6fr));
+      gap: 14px;
+      align-items: end;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0.02em;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: rgba(8, 10, 14, 0.42);
+      color: var(--text);
+      min-height: 48px;
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .field textarea {
+      min-height: 122px;
+      resize: vertical;
+      line-height: 1.7;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: rgba(243, 179, 61, 0.7);
+      box-shadow: 0 0 0 4px rgba(243, 179, 61, 0.12);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(340px, 410px) minmax(0, 1fr);
+      gap: 22px;
+    }
+
+    .form-card,
+    .library-card {
+      padding: 22px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .section-title {
+      display: grid;
+      gap: 4px;
+    }
+
+    .section-title h2,
+    .section-title h3 {
+      margin: 0;
+      font-size: 23px;
+      letter-spacing: -0.03em;
+    }
+
+    .section-title p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .preset-form {
+      display: grid;
+      gap: 14px;
+    }
+
+    .dual {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .triple {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .range-box {
+      padding: 14px;
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .range-box label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .range-box output {
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      min-height: auto;
+      padding: 0;
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+    }
+
+    .switch {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 16px;
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .switch input {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      accent-color: var(--accent);
+    }
+
+    .library-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 16px;
+    }
+
+    .preset-card {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+      border-radius: 24px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03)),
+        linear-gradient(180deg, rgba(32, 38, 50, 0.96), rgba(18, 22, 29, 0.98));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      position: relative;
+      overflow: hidden;
+      animation: rise 420ms ease both;
+    }
+
+    .preset-card::before {
+      content: "";
+      position: absolute;
+      inset: auto -38px -52px auto;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(243, 179, 61, 0.26), transparent 65%);
+      pointer-events: none;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card-title {
+      margin: 0 0 6px;
+      font-size: 21px;
+      letter-spacing: -0.03em;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .meta span,
+    .chip,
+    .score {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .score {
+      color: #17130d;
+      background: linear-gradient(180deg, #ffd680, #e5a82f);
+      border: 0;
+      font-weight: 700;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      color: #ebe7d8;
+      font-size: 12px;
+    }
+
+    .meter-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px 12px;
+    }
+
+    .meter {
+      display: grid;
+      gap: 6px;
+    }
+
+    .meter span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .track {
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, rgba(111, 211, 167, 0.92), rgba(243, 179, 61, 0.96));
+    }
+
+    .note {
+      margin: 0;
+      color: #dde3ea;
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    .card-actions .btn {
+      min-height: 38px;
+      padding: 0 14px;
+      font-size: 13px;
+    }
+
+    .empty {
+      padding: 30px 22px;
+      text-align: center;
+      border-radius: 24px;
+      border: 1px dashed rgba(255, 255, 255, 0.14);
+      color: var(--muted);
+    }
+
+    .insight-card {
+      padding: 18px;
+      margin-top: 18px;
+      background:
+        linear-gradient(135deg, rgba(111, 211, 167, 0.12), transparent 54%),
+        rgba(20, 25, 32, 0.82);
+    }
+
+    .insight-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .insight-box {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .insight-box strong {
+      display: block;
+      font-size: 20px;
+      margin-bottom: 6px;
+    }
+
+    .insight-box span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    dialog {
+      border: 0;
+      padding: 0;
+      background: transparent;
+    }
+
+    dialog::backdrop {
+      background: rgba(5, 7, 10, 0.7);
+      backdrop-filter: blur(8px);
+    }
+
+    .dialog-card {
+      width: min(560px, calc(100vw - 24px));
+      padding: 22px;
+    }
+
+    .share-code {
+      margin-top: 10px;
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(8, 10, 14, 0.42);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      color: #e4e7eb;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.75;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 240px;
+      overflow: auto;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 28px;
+      transform: translateX(-50%) translateY(18px);
+      padding: 12px 18px;
+      border-radius: 999px;
+      background: rgba(12, 15, 20, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease, transform 180ms ease;
+      box-shadow: var(--shadow);
+      z-index: 30;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 1080px) {
+      .hero,
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        width: min(100% - 20px, 100%);
+        padding-top: 14px;
+      }
+
+      .hero-card,
+      .stats-card,
+      .toolbar,
+      .form-card,
+      .library-card,
+      .insight-card {
+        border-radius: 22px;
+      }
+
+      .toolbar-grid,
+      .dual,
+      .triple,
+      .insight-grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 34px;
+      }
+
+      .stats-grid,
+      .meter-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <article class="hero-card">
+        <span class="eyeline">Nikon Filter Vault</span>
+        <h1>把你的尼康滤镜设置，整理成一个能保存、能分享、能复用的小型作品库。</h1>
+        <p class="hero-copy">
+          这个页面会把预设保存到浏览器本地，适合整理尼康机身常用滤镜风格、Picture Control 微调、不同题材参数组合，以及给朋友分享一套可直接导入的设置。
+        </p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" id="seedButton" type="button">载入示例预设</button>
+          <button class="btn btn-secondary" id="exportButton" type="button">导出全部设置</button>
+          <button class="btn btn-ghost" id="openImportButton" type="button">导入分享码</button>
+        </div>
+      </article>
+      <aside class="stats-card">
+        <div class="section-title">
+          <h2>库概览</h2>
+          <p>自动从当前预设集合里统计。</p>
+        </div>
+        <div class="stats-grid">
+          <div class="stat">
+            <div class="stat-label">总预设数</div>
+            <div class="stat-value" id="statTotal">0</div>
+            <div class="stat-note">本地浏览器保存</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">收藏数量</div>
+            <div class="stat-value" id="statFav">0</div>
+            <div class="stat-note">常用方案置顶</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">机型覆盖</div>
+            <div class="stat-value" id="statCameras">0</div>
+            <div class="stat-note">已录入不同机身</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">热门风格</div>
+            <div class="stat-value" id="statMood">-</div>
+            <div class="stat-note">按出现次数统计</div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="toolbar">
+      <div class="toolbar-grid">
+        <div class="field">
+          <label for="searchInput">搜索预设</label>
+          <input id="searchInput" type="text" placeholder="搜索名称、机型、作者、标签、备注">
+        </div>
+        <div class="field">
+          <label for="cameraFilter">机型筛选</label>
+          <select id="cameraFilter"></select>
+        </div>
+        <div class="field">
+          <label for="moodFilter">风格筛选</label>
+          <select id="moodFilter"></select>
+        </div>
+        <div class="field">
+          <label for="sortSelect">排序方式</label>
+          <select id="sortSelect">
+            <option value="updated-desc">最近更新优先</option>
+            <option value="score-desc">强度得分优先</option>
+            <option value="name-asc">名称 A-Z</option>
+            <option value="favorite-desc">收藏优先</option>
+          </select>
+        </div>
+      </div>
+      <div class="toolbar-actions" style="margin-top: 16px;">
+        <button class="btn btn-secondary" id="newPresetButton" type="button">新建预设</button>
+        <button class="btn btn-ghost" id="copyLibraryButton" type="button">复制整个库的分享摘要</button>
+        <button class="btn btn-ghost" id="clearAllButton" type="button">清空全部数据</button>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <aside class="form-card">
+        <div class="section-head">
+          <div class="section-title">
+            <h2 id="formTitle">新建尼康滤镜</h2>
+            <p>保存后会自动写入本地浏览器。</p>
+          </div>
+          <button class="btn btn-ghost" id="resetFormButton" type="button">重置</button>
+        </div>
+        <form class="preset-form" id="presetForm">
+          <input id="presetId" type="hidden">
+          <div class="field">
+            <label for="name">预设名称</label>
+            <input id="name" name="name" type="text" placeholder="例如：晨雾街拍 / 森林纪实" required>
+          </div>
+          <div class="dual">
+            <div class="field">
+              <label for="cameraModel">适用机型</label>
+              <input id="cameraModel" name="cameraModel" type="text" placeholder="例如：Zf / Z6III / D850" required>
+            </div>
+            <div class="field">
+              <label for="author">作者 / 来源</label>
+              <input id="author" name="author" type="text" placeholder="你的名字或来源">
+            </div>
+          </div>
+          <div class="dual">
+            <div class="field">
+              <label for="filterType">滤镜类型</label>
+              <input id="filterType" name="filterType" type="text" placeholder="例如：柔和人像 / 电影感 / 黑白">
+            </div>
+            <div class="field">
+              <label for="mood">风格关键词</label>
+              <input id="mood" name="mood" type="text" placeholder="例如：低饱和、暖调、层次感">
+            </div>
+          </div>
+          <div class="dual">
+            <div class="field">
+              <label for="scene">适用场景</label>
+              <input id="scene" name="scene" type="text" placeholder="人像、夜景、旅行、静物">
+            </div>
+            <div class="field">
+              <label for="whiteBalance">白平衡</label>
+              <input id="whiteBalance" name="whiteBalance" type="text" placeholder="例如：5200K / 自动偏A2M1">
+            </div>
+          </div>
+          <div class="field">
+            <label for="tags">标签</label>
+            <input id="tags" name="tags" type="text" placeholder="用逗号分隔，例如：夜景, 城市, 高反差">
+          </div>
+          <div class="triple">
+            <div class="range-box">
+              <label for="strength">滤镜强度 <output id="strengthValue">50</output></label>
+              <input id="strength" name="strength" type="range" min="0" max="100" value="50">
+            </div>
+            <div class="range-box">
+              <label for="contrast">反差 <output id="contrastValue">50</output></label>
+              <input id="contrast" name="contrast" type="range" min="0" max="100" value="50">
+            </div>
+            <div class="range-box">
+              <label for="saturation">饱和度 <output id="saturationValue">50</output></label>
+              <input id="saturation" name="saturation" type="range" min="0" max="100" value="50">
+            </div>
+            <div class="range-box">
+              <label for="sharpness">锐度 <output id="sharpnessValue">50</output></label>
+              <input id="sharpness" name="sharpness" type="range" min="0" max="100" value="50">
+            </div>
+            <div class="range-box">
+              <label for="clarity">清晰度 <output id="clarityValue">50</output></label>
+              <input id="clarity" name="clarity" type="range" min="0" max="100" value="50">
+            </div>
+            <div class="range-box">
+              <label for="grain">颗粒感 <output id="grainValue">10</output></label>
+              <input id="grain" name="grain" type="range" min="0" max="100" value="10">
+            </div>
+          </div>
+          <div class="field">
+            <label for="notes">备注</label>
+            <textarea id="notes" name="notes" placeholder="写下曝光补偿建议、适合时间段、后期搭配或使用心得。"></textarea>
+          </div>
+          <label class="switch">
+            <span>加入收藏</span>
+            <input id="favorite" name="favorite" type="checkbox">
+          </label>
+          <div class="chip-row">
+            <button class="btn btn-primary" type="submit">保存预设</button>
+            <button class="btn btn-secondary" id="duplicateCurrentButton" type="button">复制当前内容</button>
+          </div>
+        </form>
+
+        <section class="insight-card">
+          <div class="section-title">
+            <h3>使用建议</h3>
+            <p>让这个页面更适合实际分享。</p>
+          </div>
+          <div class="insight-grid">
+            <div class="insight-box">
+              <strong>01</strong>
+              <span>把常用机型写清楚，朋友导入后更容易复现同样的画面。</span>
+            </div>
+            <div class="insight-box">
+              <strong>02</strong>
+              <span>备注里建议写上曝光补偿、建议镜头和适用光线。</span>
+            </div>
+            <div class="insight-box">
+              <strong>03</strong>
+              <span>分享单个预设时，用“复制分享码”最省事，直接发给别人即可。</span>
+            </div>
+            <div class="insight-box">
+              <strong>04</strong>
+              <span>定期导出 JSON 文件，可以把你的滤镜库做离线备份。</span>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <section class="library-card">
+        <div class="section-head">
+          <div class="section-title">
+            <h2>预设库</h2>
+            <p id="libraryMeta">还没有保存任何预设。</p>
+          </div>
+        </div>
+        <div id="presetList" class="library-grid"></div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="importDialog">
+    <div class="dialog-card">
+      <div class="section-title">
+        <h3>导入分享码或 JSON</h3>
+        <p>支持单个预设分享码，也支持整个导出的 JSON 数组。</p>
+      </div>
+      <div class="field" style="margin-top: 16px;">
+        <label for="importPayload">粘贴内容</label>
+        <textarea id="importPayload" placeholder="把分享码或 JSON 粘贴到这里"></textarea>
+      </div>
+      <div class="dialog-actions" style="margin-top: 14px;">
+        <button class="btn btn-primary" id="confirmImportButton" type="button">开始导入</button>
+        <button class="btn btn-secondary" id="cancelImportButton" type="button">取消</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="shareDialog">
+    <div class="dialog-card">
+      <div class="section-title">
+        <h3 id="shareTitle">分享内容</h3>
+        <p>可以直接复制给别人，导入后会自动追加到对方的本地库中。</p>
+      </div>
+      <div id="shareCode" class="share-code"></div>
+      <div class="dialog-actions" style="margin-top: 14px;">
+        <button class="btn btn-primary" id="copyShareCodeButton" type="button">复制内容</button>
+        <button class="btn btn-secondary" id="closeShareDialogButton" type="button">关闭</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const STORAGE_KEY = "nikon-filter-vault-v1";
+    const IMPORT_PREFIX = "NIKON_FILTER_SHARE::";
+    const LIBRARY_PREFIX = "NIKON_FILTER_LIBRARY::";
+
+    const samplePresets = [
+      {
+        id: crypto.randomUUID(),
+        name: "东京夜色蓝调",
+        cameraModel: "Nikon Zf",
+        author: "Codex Studio",
+        filterType: "电影感夜景",
+        mood: "冷调、城市、霓虹层次",
+        scene: "夜景, 街拍",
+        whiteBalance: "3800K / 偏B1",
+        tags: ["夜景", "街拍", "霓虹"],
+        strength: 74,
+        contrast: 68,
+        saturation: 42,
+        sharpness: 57,
+        clarity: 61,
+        grain: 18,
+        favorite: true,
+        notes: "高光容易炸，建议 -0.3EV。适合雨后路面和霓虹招牌，35mm 或 40mm 更容易出层次。",
+        createdAt: Date.now() - 86400000 * 8,
+        updatedAt: Date.now() - 86400000 * 2
+      },
+      {
+        id: crypto.randomUUID(),
+        name: "晨雾森林纪实",
+        cameraModel: "Nikon Z6III",
+        author: "Codex Studio",
+        filterType: "低饱和自然色",
+        mood: "空气感、低反差、轻雾",
+        scene: "风光, 徒步, 森林",
+        whiteBalance: "5200K / 自动偏A1",
+        tags: ["风光", "森林", "自然"],
+        strength: 56,
+        contrast: 39,
+        saturation: 46,
+        sharpness: 52,
+        clarity: 44,
+        grain: 8,
+        favorite: false,
+        notes: "如果太阳出来，白平衡可以再暖一点。适合早晨逆光和大面积绿色环境。",
+        createdAt: Date.now() - 86400000 * 5,
+        updatedAt: Date.now() - 86400000
+      },
+      {
+        id: crypto.randomUUID(),
+        name: "柔和人像奶油肤色",
+        cameraModel: "Nikon D850",
+        author: "Codex Studio",
+        filterType: "柔和人像",
+        mood: "暖调、肤色柔和、通透",
+        scene: "人像, 婚礼, 室内",
+        whiteBalance: "5600K / 偏A2M1",
+        tags: ["人像", "室内", "暖调"],
+        strength: 63,
+        contrast: 41,
+        saturation: 54,
+        sharpness: 38,
+        clarity: 29,
+        grain: 6,
+        favorite: true,
+        notes: "适合逆光或窗边自然光，皮肤更柔和。拍摄时略微过曝 0.3EV 会更通透。",
+        createdAt: Date.now() - 86400000 * 13,
+        updatedAt: Date.now() - 86400000 * 4
+      }
+    ];
+
+    const elements = {
+      form: document.getElementById("presetForm"),
+      formTitle: document.getElementById("formTitle"),
+      presetId: document.getElementById("presetId"),
+      presetList: document.getElementById("presetList"),
+      libraryMeta: document.getElementById("libraryMeta"),
+      searchInput: document.getElementById("searchInput"),
+      cameraFilter: document.getElementById("cameraFilter"),
+      moodFilter: document.getElementById("moodFilter"),
+      sortSelect: document.getElementById("sortSelect"),
+      exportButton: document.getElementById("exportButton"),
+      openImportButton: document.getElementById("openImportButton"),
+      newPresetButton: document.getElementById("newPresetButton"),
+      seedButton: document.getElementById("seedButton"),
+      clearAllButton: document.getElementById("clearAllButton"),
+      resetFormButton: document.getElementById("resetFormButton"),
+      duplicateCurrentButton: document.getElementById("duplicateCurrentButton"),
+      copyLibraryButton: document.getElementById("copyLibraryButton"),
+      importDialog: document.getElementById("importDialog"),
+      importPayload: document.getElementById("importPayload"),
+      confirmImportButton: document.getElementById("confirmImportButton"),
+      cancelImportButton: document.getElementById("cancelImportButton"),
+      shareDialog: document.getElementById("shareDialog"),
+      shareTitle: document.getElementById("shareTitle"),
+      shareCode: document.getElementById("shareCode"),
+      copyShareCodeButton: document.getElementById("copyShareCodeButton"),
+      closeShareDialogButton: document.getElementById("closeShareDialogButton"),
+      toast: document.getElementById("toast"),
+      stats: {
+        total: document.getElementById("statTotal"),
+        favorite: document.getElementById("statFav"),
+        cameras: document.getElementById("statCameras"),
+        mood: document.getElementById("statMood")
+      }
+    };
+
+    const rangeIds = ["strength", "contrast", "saturation", "sharpness", "clarity", "grain"];
+    const state = {
+      presets: loadPresets(),
+      shareContent: ""
+    };
+
+    function loadPresets() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        console.error(error);
+        return [];
+      }
+    }
+
+    function savePresets() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.presets));
+    }
+
+    function showToast(message) {
+      elements.toast.textContent = message;
+      elements.toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => {
+        elements.toast.classList.remove("show");
+      }, 2200);
+    }
+
+    function encodePresetPayload(preset) {
+      return IMPORT_PREFIX + btoa(unescape(encodeURIComponent(JSON.stringify(preset))));
+    }
+
+    function encodeLibraryPayload(presets) {
+      return LIBRARY_PREFIX + btoa(unescape(encodeURIComponent(JSON.stringify(presets))));
+    }
+
+    function decodePayload(payload) {
+      const value = payload.trim();
+      if (value.startsWith(IMPORT_PREFIX)) {
+        return JSON.parse(decodeURIComponent(escape(atob(value.slice(IMPORT_PREFIX.length)))));
+      }
+      if (value.startsWith(LIBRARY_PREFIX)) {
+        return JSON.parse(decodeURIComponent(escape(atob(value.slice(LIBRARY_PREFIX.length)))));
+      }
+      return JSON.parse(value);
+    }
+
+    function numericAverage(preset) {
+      return Math.round((preset.strength + preset.contrast + preset.saturation + preset.sharpness + preset.clarity) / 5);
+    }
+
+    function normalizePreset(data, originalId = null) {
+      return {
+        id: originalId || data.id || crypto.randomUUID(),
+        name: data.name?.trim() || "未命名预设",
+        cameraModel: data.cameraModel?.trim() || "未注明机型",
+        author: data.author?.trim() || "未署名",
+        filterType: data.filterType?.trim() || "通用风格",
+        mood: data.mood?.trim() || "未标注",
+        scene: data.scene?.trim() || "未标注",
+        whiteBalance: data.whiteBalance?.trim() || "自动",
+        tags: Array.isArray(data.tags)
+          ? data.tags.filter(Boolean)
+          : String(data.tags || "")
+              .split(",")
+              .map((tag) => tag.trim())
+              .filter(Boolean),
+        strength: Number(data.strength) || 0,
+        contrast: Number(data.contrast) || 0,
+        saturation: Number(data.saturation) || 0,
+        sharpness: Number(data.sharpness) || 0,
+        clarity: Number(data.clarity) || 0,
+        grain: Number(data.grain) || 0,
+        favorite: Boolean(data.favorite),
+        notes: data.notes?.trim() || "",
+        createdAt: Number(data.createdAt) || Date.now(),
+        updatedAt: Date.now()
+      };
+    }
+
+    function formToPreset() {
+      const formData = new FormData(elements.form);
+      const data = Object.fromEntries(formData.entries());
+      data.favorite = document.getElementById("favorite").checked;
+      return normalizePreset(data, elements.presetId.value || null);
+    }
+
+    function resetForm() {
+      elements.form.reset();
+      elements.presetId.value = "";
+      elements.formTitle.textContent = "新建尼康滤镜";
+      rangeIds.forEach(updateRangeOutput);
+      document.getElementById("favorite").checked = false;
+    }
+
+    function fillForm(preset, duplicate = false) {
+      elements.formTitle.textContent = duplicate ? "复制为新预设" : "编辑预设";
+      elements.presetId.value = duplicate ? "" : preset.id;
+      document.getElementById("name").value = duplicate ? preset.name + " 副本" : preset.name;
+      document.getElementById("cameraModel").value = preset.cameraModel;
+      document.getElementById("author").value = preset.author;
+      document.getElementById("filterType").value = preset.filterType;
+      document.getElementById("mood").value = preset.mood;
+      document.getElementById("scene").value = preset.scene;
+      document.getElementById("whiteBalance").value = preset.whiteBalance;
+      document.getElementById("tags").value = preset.tags.join(", ");
+      document.getElementById("strength").value = preset.strength;
+      document.getElementById("contrast").value = preset.contrast;
+      document.getElementById("saturation").value = preset.saturation;
+      document.getElementById("sharpness").value = preset.sharpness;
+      document.getElementById("clarity").value = preset.clarity;
+      document.getElementById("grain").value = preset.grain;
+      document.getElementById("notes").value = preset.notes;
+      document.getElementById("favorite").checked = preset.favorite;
+      rangeIds.forEach(updateRangeOutput);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function upsertPreset(preset) {
+      const index = state.presets.findIndex((item) => item.id === preset.id);
+      if (index >= 0) {
+        preset.createdAt = state.presets[index].createdAt;
+        state.presets[index] = preset;
+      } else {
+        state.presets.unshift(preset);
+      }
+      savePresets();
+      render();
+    }
+
+    function deletePreset(id) {
+      state.presets = state.presets.filter((preset) => preset.id !== id);
+      savePresets();
+      render();
+    }
+
+    function toggleFavorite(id) {
+      const preset = state.presets.find((item) => item.id === id);
+      if (!preset) return;
+      preset.favorite = !preset.favorite;
+      preset.updatedAt = Date.now();
+      savePresets();
+      render();
+    }
+
+    function importData(payload) {
+      const decoded = decodePayload(payload);
+      const incoming = Array.isArray(decoded) ? decoded : [decoded];
+      const normalized = incoming.map((item) => normalizePreset(item));
+      state.presets = [...normalized, ...state.presets];
+      savePresets();
+      render();
+      return normalized.length;
+    }
+
+    function updateRangeOutput(id) {
+      document.getElementById(id + "Value").textContent = document.getElementById(id).value;
+    }
+
+    function buildShareText(preset) {
+      return [
+        `预设名称：${preset.name}`,
+        `适用机型：${preset.cameraModel}`,
+        `风格：${preset.filterType} / ${preset.mood}`,
+        `场景：${preset.scene}`,
+        `白平衡：${preset.whiteBalance}`,
+        `参数：强度 ${preset.strength}｜反差 ${preset.contrast}｜饱和度 ${preset.saturation}｜锐度 ${preset.sharpness}｜清晰度 ${preset.clarity}｜颗粒 ${preset.grain}`,
+        `标签：${preset.tags.join("、") || "无"}`,
+        `备注：${preset.notes || "无"}`,
+        "",
+        "导入分享码：",
+        encodePresetPayload(preset)
+      ].join("\n");
+    }
+
+    function openShareDialog(title, content) {
+      state.shareContent = content;
+      elements.shareTitle.textContent = title;
+      elements.shareCode.textContent = content;
+      elements.shareDialog.showModal();
+    }
+
+    function filteredPresets() {
+      const query = elements.searchInput.value.trim().toLowerCase();
+      const camera = elements.cameraFilter.value;
+      const mood = elements.moodFilter.value;
+      const sort = elements.sortSelect.value;
+
+      let list = [...state.presets].filter((preset) => {
+        const haystack = [
+          preset.name,
+          preset.cameraModel,
+          preset.author,
+          preset.filterType,
+          preset.mood,
+          preset.scene,
+          preset.whiteBalance,
+          preset.notes,
+          preset.tags.join(" ")
+        ].join(" ").toLowerCase();
+
+        const matchesQuery = !query || haystack.includes(query);
+        const matchesCamera = camera === "all" || preset.cameraModel === camera;
+        const matchesMood = mood === "all" || preset.mood === mood;
+        return matchesQuery && matchesCamera && matchesMood;
+      });
+
+      list.sort((a, b) => {
+        if (sort === "name-asc") return a.name.localeCompare(b.name, "zh-CN");
+        if (sort === "score-desc") return numericAverage(b) - numericAverage(a);
+        if (sort === "favorite-desc") return Number(b.favorite) - Number(a.favorite) || b.updatedAt - a.updatedAt;
+        return b.updatedAt - a.updatedAt;
+      });
+
+      return list;
+    }
+
+    function updateFilterOptions() {
+      const cameraOptions = ["all", ...new Set(state.presets.map((item) => item.cameraModel))];
+      const moodOptions = ["all", ...new Set(state.presets.map((item) => item.mood))];
+
+      const fillSelect = (select, options, currentValue) => {
+        select.innerHTML = options
+          .map((value) => `<option value="${value}">${value === "all" ? "全部" : value}</option>`)
+          .join("");
+        select.value = options.includes(currentValue) ? currentValue : "all";
+      };
+
+      fillSelect(elements.cameraFilter, cameraOptions, elements.cameraFilter.value);
+      fillSelect(elements.moodFilter, moodOptions, elements.moodFilter.value);
+    }
+
+    function updateStats() {
+      const total = state.presets.length;
+      const favorite = state.presets.filter((preset) => preset.favorite).length;
+      const cameras = new Set(state.presets.map((preset) => preset.cameraModel)).size;
+      const moods = state.presets.reduce((map, preset) => {
+        map[preset.mood] = (map[preset.mood] || 0) + 1;
+        return map;
+      }, {});
+      const topMood = Object.entries(moods).sort((a, b) => b[1] - a[1])[0]?.[0] || "-";
+
+      elements.stats.total.textContent = total;
+      elements.stats.favorite.textContent = favorite;
+      elements.stats.cameras.textContent = cameras;
+      elements.stats.mood.textContent = topMood.length > 8 ? topMood.slice(0, 8) + "…" : topMood;
+    }
+
+    function renderPresets() {
+      const list = filteredPresets();
+      elements.libraryMeta.textContent = list.length
+        ? `当前展示 ${list.length} 条预设，共存放 ${state.presets.length} 条。`
+        : "当前筛选结果为空，可以试试更换关键词或直接新建一条预设。";
+
+      if (!list.length) {
+        elements.presetList.innerHTML = `<div class="empty">还没有匹配的预设。你可以先新建，或者点击“载入示例预设”。</div>`;
+        return;
+      }
+
+      elements.presetList.innerHTML = list.map((preset) => {
+        const updated = new Date(preset.updatedAt).toLocaleDateString("zh-CN");
+        const score = numericAverage(preset);
+        const meters = [
+          ["强度", preset.strength],
+          ["反差", preset.contrast],
+          ["饱和度", preset.saturation],
+          ["锐度", preset.sharpness],
+          ["清晰度", preset.clarity],
+          ["颗粒", preset.grain]
+        ];
+
+        return `
+          <article class="preset-card">
+            <div class="card-top">
+              <div>
+                <h3 class="card-title">${preset.name}</h3>
+                <div class="meta">
+                  <span>${preset.cameraModel}</span>
+                  <span>${preset.author}</span>
+                  <span>${preset.filterType}</span>
+                </div>
+              </div>
+              <span class="score">${score} 分</span>
+            </div>
+            <div class="chips">
+              <span class="chip">${preset.mood}</span>
+              <span class="chip">${preset.scene}</span>
+              <span class="chip">${preset.whiteBalance}</span>
+              ${preset.favorite ? `<span class="chip">收藏</span>` : ""}
+              ${preset.tags.map((tag) => `<span class="chip">#${tag}</span>`).join("")}
+            </div>
+            <div class="meter-grid">
+              ${meters.map(([label, value]) => `
+                <div class="meter">
+                  <span>${label} ${value}</span>
+                  <div class="track"><div class="fill" style="width:${value}%;"></div></div>
+                </div>
+              `).join("")}
+            </div>
+            <p class="note">${preset.notes || "这条预设还没有备注。可以补充曝光补偿、镜头建议或适用时间段。"}</p>
+            <div class="meta">
+              <span>更新于 ${updated}</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn btn-secondary" type="button" data-action="edit" data-id="${preset.id}">编辑</button>
+              <button class="btn btn-secondary" type="button" data-action="share" data-id="${preset.id}">复制分享码</button>
+              <button class="btn btn-ghost" type="button" data-action="favorite" data-id="${preset.id}">${preset.favorite ? "取消收藏" : "加入收藏"}</button>
+              <button class="btn btn-ghost" type="button" data-action="duplicate" data-id="${preset.id}">复制</button>
+              <button class="btn btn-ghost" type="button" data-action="delete" data-id="${preset.id}">删除</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function render() {
+      updateFilterOptions();
+      updateStats();
+      renderPresets();
+    }
+
+    elements.form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const preset = formToPreset();
+      upsertPreset(preset);
+      resetForm();
+      showToast("预设已保存到本地库");
+    });
+
+    elements.presetList.addEventListener("click", async (event) => {
+      const button = event.target.closest("[data-action]");
+      if (!button) return;
+      const preset = state.presets.find((item) => item.id === button.dataset.id);
+      if (!preset) return;
+
+      const action = button.dataset.action;
+      if (action === "edit") {
+        fillForm(preset);
+        return;
+      }
+      if (action === "favorite") {
+        const nextState = !preset.favorite;
+        toggleFavorite(preset.id);
+        showToast(nextState ? "已加入收藏" : "已取消收藏");
+        return;
+      }
+      if (action === "duplicate") {
+        fillForm(preset, true);
+        showToast("已把内容填入表单，可直接另存为新预设");
+        return;
+      }
+      if (action === "delete") {
+        if (confirm(`确认删除“${preset.name}”吗？`)) {
+          deletePreset(preset.id);
+          showToast("预设已删除");
+        }
+        return;
+      }
+      if (action === "share") {
+        openShareDialog(`${preset.name} 的分享内容`, buildShareText(preset));
+      }
+    });
+
+    [elements.searchInput, elements.cameraFilter, elements.moodFilter, elements.sortSelect].forEach((element) => {
+      element.addEventListener("input", renderPresets);
+      element.addEventListener("change", renderPresets);
+    });
+
+    rangeIds.forEach((id) => {
+      document.getElementById(id).addEventListener("input", () => updateRangeOutput(id));
+      updateRangeOutput(id);
+    });
+
+    elements.exportButton.addEventListener("click", () => {
+      if (!state.presets.length) {
+        showToast("当前没有可导出的内容");
+        return;
+      }
+      const content = JSON.stringify(state.presets, null, 2);
+      const blob = new Blob([content], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `nikon-filter-library-${new Date().toISOString().slice(0, 10)}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+      showToast("已导出 JSON 文件");
+    });
+
+    elements.openImportButton.addEventListener("click", () => {
+      elements.importPayload.value = "";
+      elements.importDialog.showModal();
+    });
+
+    elements.confirmImportButton.addEventListener("click", () => {
+      const payload = elements.importPayload.value.trim();
+      if (!payload) {
+        showToast("先粘贴分享码或 JSON");
+        return;
+      }
+      try {
+        const count = importData(payload);
+        elements.importDialog.close();
+        showToast(`已导入 ${count} 条预设`);
+      } catch (error) {
+        console.error(error);
+        showToast("导入失败，请检查内容格式");
+      }
+    });
+
+    elements.cancelImportButton.addEventListener("click", () => elements.importDialog.close());
+    elements.closeShareDialogButton.addEventListener("click", () => elements.shareDialog.close());
+
+    elements.copyShareCodeButton.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(state.shareContent);
+        showToast("分享内容已复制");
+      } catch (error) {
+        console.error(error);
+        showToast("复制失败，请手动复制");
+      }
+    });
+
+    elements.newPresetButton.addEventListener("click", () => {
+      resetForm();
+      document.getElementById("name").focus();
+    });
+
+    elements.resetFormButton.addEventListener("click", resetForm);
+
+    elements.duplicateCurrentButton.addEventListener("click", () => {
+      elements.presetId.value = "";
+      elements.formTitle.textContent = "复制为新预设";
+      document.getElementById("name").value = document.getElementById("name").value
+        ? document.getElementById("name").value + " 副本"
+        : "";
+      showToast("当前表单已切换为复制模式");
+    });
+
+    elements.seedButton.addEventListener("click", () => {
+      const sampleNames = new Set(samplePresets.map((preset) => preset.name));
+      const remaining = state.presets.filter((preset) => !sampleNames.has(preset.name));
+      state.presets = [...samplePresets, ...remaining];
+      savePresets();
+      render();
+      showToast("示例预设已载入");
+    });
+
+    elements.copyLibraryButton.addEventListener("click", async () => {
+      if (!state.presets.length) {
+        showToast("当前没有可分享的内容");
+        return;
+      }
+      const payload = [
+        "尼康滤镜库分享",
+        `总数：${state.presets.length}`,
+        "",
+        "整库导入码：",
+        encodeLibraryPayload(state.presets)
+      ].join("\n");
+      openShareDialog("整库分享内容", payload);
+      try {
+        await navigator.clipboard.writeText(payload);
+        showToast("整库分享内容已复制");
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
+    elements.clearAllButton.addEventListener("click", () => {
+      if (!state.presets.length) {
+        showToast("当前库已经是空的");
+        return;
+      }
+      if (confirm("确认清空当前浏览器里保存的全部预设吗？")) {
+        state.presets = [];
+        savePresets();
+        resetForm();
+        render();
+        showToast("已清空全部数据");
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        elements.form.requestSubmit();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
