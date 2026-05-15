@@ -870,6 +870,7 @@
             <p id="libraryMeta">还没有保存任何预设。</p>
           </div>
         </div>
+        <p id="cloudStatus" class="stat-note">本地模式：数据只保存在当前浏览器。</p>
         <div id="presetList" class="library-grid"></div>
       </section>
     </section>
@@ -908,10 +909,17 @@
 
   <div class="toast" id="toast"></div>
 
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const STORAGE_KEY = "nikon-filter-vault-v1";
     const IMPORT_PREFIX = "NIKON_FILTER_SHARE::";
     const LIBRARY_PREFIX = "NIKON_FILTER_LIBRARY::";
+    const APP_CONFIG = window.NIKON_RESHARE_CONFIG || {};
+    const SUPABASE_CONFIG = APP_CONFIG.supabase || {};
+    const cloudClient = SUPABASE_CONFIG.url && SUPABASE_CONFIG.anonKey && window.supabase
+      ? window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
+      : null;
 
     const samplePresets = [
       {
@@ -985,6 +993,7 @@
       presetId: document.getElementById("presetId"),
       presetList: document.getElementById("presetList"),
       libraryMeta: document.getElementById("libraryMeta"),
+      cloudStatus: document.getElementById("cloudStatus"),
       searchInput: document.getElementById("searchInput"),
       cameraFilter: document.getElementById("cameraFilter"),
       moodFilter: document.getElementById("moodFilter"),
@@ -1018,7 +1027,8 @@
     const rangeIds = ["strength", "contrast", "saturation", "sharpness", "clarity", "grain"];
     const state = {
       presets: loadPresets(),
-      shareContent: ""
+      shareContent: "",
+      isCloud: Boolean(cloudClient)
     };
 
     function loadPresets() {
@@ -1034,6 +1044,121 @@
 
     function savePresets() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.presets));
+    }
+
+    function setCloudStatus(message) {
+      if (elements.cloudStatus) {
+        elements.cloudStatus.textContent = message;
+      }
+    }
+
+    function fromDbPreset(row) {
+      return {
+        id: row.id,
+        name: row.name,
+        cameraModel: row.camera_model,
+        author: row.author,
+        filterType: row.filter_type,
+        mood: row.mood,
+        scene: row.scene,
+        whiteBalance: row.white_balance,
+        tags: row.tags || [],
+        strength: row.strength,
+        contrast: row.contrast,
+        saturation: row.saturation,
+        sharpness: row.sharpness,
+        clarity: row.clarity,
+        grain: row.grain,
+        favorite: row.favorite,
+        notes: row.notes || "",
+        createdAt: row.created_at ? new Date(row.created_at).getTime() : Date.now(),
+        updatedAt: row.updated_at ? new Date(row.updated_at).getTime() : Date.now()
+      };
+    }
+
+    function toDbPreset(preset) {
+      return {
+        id: preset.id,
+        name: preset.name,
+        camera_model: preset.cameraModel,
+        author: preset.author,
+        filter_type: preset.filterType,
+        mood: preset.mood,
+        scene: preset.scene,
+        white_balance: preset.whiteBalance,
+        tags: preset.tags,
+        strength: preset.strength,
+        contrast: preset.contrast,
+        saturation: preset.saturation,
+        sharpness: preset.sharpness,
+        clarity: preset.clarity,
+        grain: preset.grain,
+        favorite: preset.favorite,
+        notes: preset.notes,
+        created_at: new Date(preset.createdAt).toISOString(),
+        updated_at: new Date(preset.updatedAt).toISOString()
+      };
+    }
+
+    async function refreshFromCloud(showSuccess = false) {
+      if (!cloudClient) {
+        setCloudStatus("本地模式：数据只保存在当前浏览器。");
+        return;
+      }
+
+      setCloudStatus("云端模式：正在同步公共滤镜库...");
+      const { data, error } = await cloudClient
+        .from("presets")
+        .select("*")
+        .order("updated_at", { ascending: false });
+
+      if (error) {
+        console.error(error);
+        state.isCloud = false;
+        setCloudStatus("云端同步失败，已临时切回本地缓存。");
+        showToast("云端同步失败，请检查 Supabase 配置");
+        return;
+      }
+
+      state.isCloud = true;
+      state.presets = data.map(fromDbPreset);
+      savePresets();
+      setCloudStatus("云端模式：所有访问者共享同一个滤镜库。");
+      render();
+      if (showSuccess) {
+        showToast("已同步云端滤镜库");
+      }
+    }
+
+    async function persistPreset(preset) {
+      if (!state.isCloud || !cloudClient) {
+        return;
+      }
+
+      const { error } = await cloudClient
+        .from("presets")
+        .upsert(toDbPreset(preset), { onConflict: "id" });
+
+      if (error) {
+        console.error(error);
+        throw error;
+      }
+    }
+
+    async function removePresetFromCloud(id) {
+      if (!state.isCloud || !cloudClient) {
+        return;
+      }
+
+      const { error } = await cloudClient
+        .from("presets")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        console.error(error);
+        throw error;
+      }
     }
 
     function showToast(message) {
@@ -1135,7 +1260,7 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    function upsertPreset(preset) {
+    async function upsertPreset(preset) {
       const index = state.presets.findIndex((item) => item.id === preset.id);
       if (index >= 0) {
         preset.createdAt = state.presets[index].createdAt;
@@ -1143,30 +1268,36 @@
       } else {
         state.presets.unshift(preset);
       }
+      await persistPreset(preset);
       savePresets();
       render();
     }
 
-    function deletePreset(id) {
+    async function deletePreset(id) {
+      await removePresetFromCloud(id);
       state.presets = state.presets.filter((preset) => preset.id !== id);
       savePresets();
       render();
     }
 
-    function toggleFavorite(id) {
+    async function toggleFavorite(id) {
       const preset = state.presets.find((item) => item.id === id);
       if (!preset) return;
       preset.favorite = !preset.favorite;
       preset.updatedAt = Date.now();
+      await persistPreset(preset);
       savePresets();
       render();
     }
 
-    function importData(payload) {
+    async function importData(payload) {
       const decoded = decodePayload(payload);
       const incoming = Array.isArray(decoded) ? decoded : [decoded];
       const normalized = incoming.map((item) => normalizePreset(item));
       state.presets = [...normalized, ...state.presets];
+      if (state.isCloud) {
+        await Promise.all(normalized.map(persistPreset));
+      }
       savePresets();
       render();
       return normalized.length;
@@ -1338,12 +1469,17 @@
       renderPresets();
     }
 
-    elements.form.addEventListener("submit", (event) => {
+    elements.form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const preset = formToPreset();
-      upsertPreset(preset);
-      resetForm();
-      showToast("预设已保存到本地库");
+      try {
+        await upsertPreset(preset);
+        resetForm();
+        showToast(state.isCloud ? "预设已同步到云端库" : "预设已保存到本地库");
+      } catch (error) {
+        console.error(error);
+        showToast("保存失败，请检查云端配置或网络");
+      }
     });
 
     elements.presetList.addEventListener("click", async (event) => {
@@ -1359,8 +1495,13 @@
       }
       if (action === "favorite") {
         const nextState = !preset.favorite;
-        toggleFavorite(preset.id);
-        showToast(nextState ? "已加入收藏" : "已取消收藏");
+        try {
+          await toggleFavorite(preset.id);
+          showToast(nextState ? "已加入收藏" : "已取消收藏");
+        } catch (error) {
+          console.error(error);
+          showToast("收藏状态同步失败");
+        }
         return;
       }
       if (action === "duplicate") {
@@ -1370,8 +1511,13 @@
       }
       if (action === "delete") {
         if (confirm(`确认删除“${preset.name}”吗？`)) {
-          deletePreset(preset.id);
-          showToast("预设已删除");
+          try {
+            await deletePreset(preset.id);
+            showToast("预设已删除");
+          } catch (error) {
+            console.error(error);
+            showToast("删除失败，请检查云端权限");
+          }
         }
         return;
       }
@@ -1411,14 +1557,14 @@
       elements.importDialog.showModal();
     });
 
-    elements.confirmImportButton.addEventListener("click", () => {
+    elements.confirmImportButton.addEventListener("click", async () => {
       const payload = elements.importPayload.value.trim();
       if (!payload) {
         showToast("先粘贴分享码或 JSON");
         return;
       }
       try {
-        const count = importData(payload);
+        const count = await importData(payload);
         elements.importDialog.close();
         showToast(`已导入 ${count} 条预设`);
       } catch (error) {
@@ -1456,13 +1602,21 @@
       showToast("当前表单已切换为复制模式");
     });
 
-    elements.seedButton.addEventListener("click", () => {
+    elements.seedButton.addEventListener("click", async () => {
       const sampleNames = new Set(samplePresets.map((preset) => preset.name));
       const remaining = state.presets.filter((preset) => !sampleNames.has(preset.name));
       state.presets = [...samplePresets, ...remaining];
-      savePresets();
-      render();
-      showToast("示例预设已载入");
+      try {
+        if (state.isCloud) {
+          await Promise.all(samplePresets.map(persistPreset));
+        }
+        savePresets();
+        render();
+        showToast(state.isCloud ? "示例预设已同步到云端" : "示例预设已载入");
+      } catch (error) {
+        console.error(error);
+        showToast("示例预设同步失败");
+      }
     });
 
     elements.copyLibraryButton.addEventListener("click", async () => {
@@ -1507,7 +1661,12 @@
       }
     });
 
-    render();
+    async function initApp() {
+      render();
+      await refreshFromCloud();
+    }
+
+    initApp();
   </script>
 </body>
 </html>
