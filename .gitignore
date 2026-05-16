@@ -1,2 +1,6 @@
 tools/
 preview.png
+node_modules/
+dist/
+.tooling/
+.codex/
