@@ -236,17 +236,12 @@
       min-height: 130px;
     }
 
-    .jet-silhouette {
-      width: min(660px, 94%);
+    .ed-logo {
+      width: min(480px, 78%);
       height: auto;
       filter: drop-shadow(0 28px 32px rgba(0, 0, 0, 0.46));
-      transform: translateX(4%);
-    }
-
-    .jet-silhouette path {
-      fill: url(#jetGradient);
-      stroke: rgba(238, 244, 229, 0.42);
-      stroke-width: 1;
+      transform: translateX(6%);
+      opacity: 0.94;
     }
 
     .hero-stats {
@@ -459,7 +454,7 @@
     }
 
     .card {
-      min-height: 330px;
+      min-height: 430px;
       padding: 16px;
       display: grid;
       gap: 13px;
@@ -514,23 +509,38 @@
       font-size: 12px;
     }
 
-    .mini-jet {
+    .poster {
       width: 100%;
-      height: 74px;
-      display: grid;
-      place-items: center;
+      aspect-ratio: 16 / 9;
       border-radius: var(--radius);
       background:
-        linear-gradient(90deg, transparent 49%, rgba(255, 255, 255, 0.10) 50%, transparent 51%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.10), transparent),
         rgba(0, 0, 0, 0.16);
       border: 1px solid var(--line);
+      overflow: hidden;
+      position: relative;
     }
 
-    .mini-jet svg {
-      width: 78%;
-      height: 58px;
-      fill: var(--accent, var(--green));
-      opacity: 0.92;
+    .poster img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      transition: transform 220ms ease, filter 220ms ease;
+    }
+
+    .poster::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 -48px 70px rgba(0, 0, 0, 0.34);
+      pointer-events: none;
+    }
+
+    .card:hover .poster img {
+      transform: scale(1.035);
+      filter: saturate(1.08) contrast(1.04);
     }
 
     .card p {
@@ -571,9 +581,34 @@
       margin-top: 18px;
       padding: 18px;
       display: grid;
-      grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
+      grid-template-columns: minmax(280px, 0.82fr) minmax(0, 1fr) minmax(300px, 0.88fr);
       gap: 18px;
       align-items: stretch;
+    }
+
+    .detail-poster {
+      min-height: 100%;
+      aspect-ratio: 4 / 5;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.18);
+      position: relative;
+    }
+
+    .detail-poster img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .detail-poster::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 52%, rgba(0, 0, 0, 0.52));
+      pointer-events: none;
     }
 
     .detail-copy h2 {
@@ -742,20 +777,11 @@
         <div class="runway" aria-hidden="true"></div>
         <div class="hero-copy">
           <p class="section-label">mission ready collection</p>
-          <h2>从冷战拦截到多用途打击，挑一架你今晚想飞的喷气机。</h2>
+          <h2>雷达已点亮，选择你的捍卫者。</h2>
           <p>DCS 的魅力不只是“哪架更强”，而是每架飞机都有自己的任务节奏：雷达管理、武器流程、能量保持、座舱负担和战术边界。这个页面把热门喷气式战斗机整理成一张可筛选的机库看板。</p>
         </div>
-        <div class="jet-stage" aria-hidden="true">
-          <svg class="jet-silhouette" viewBox="0 0 900 220" role="img" aria-label="喷气式战斗机剪影">
-            <defs>
-              <linearGradient id="jetGradient" x1="0" x2="1">
-                <stop offset="0" stop-color="#3f4740"/>
-                <stop offset="0.42" stop-color="#eef4e5"/>
-                <stop offset="1" stop-color="#73806f"/>
-              </linearGradient>
-            </defs>
-            <path d="M850 104 520 78 396 14 340 22 444 86 266 92 151 42 93 51l94 60-94 58 58 9 115-49 178 5-104 64 56 8 124-64 330-26c20-2 31-6 31-12s-11-10-31-10Z"/>
-          </svg>
+        <div class="jet-stage">
+          <img class="ed-logo" src="https://www.digitalcombatsimulator.com/images/logos/Eagle_Dynamics.png" alt="Eagle Dynamics logo">
         </div>
         <div class="hero-stats">
           <div class="stat"><strong>12</strong><span>精选喷气机</span></div>
@@ -818,6 +844,9 @@
     </section>
 
     <section class="detail-panel" id="detail">
+      <div class="detail-poster">
+        <img id="detailPoster" src="" alt="">
+      </div>
       <div class="detail-copy">
         <p class="section-label">mission focus</p>
         <h2 id="detailTitle">F/A-18C Hornet</h2>
@@ -865,6 +894,8 @@
         pilot: "想体验完整现代海航流程的玩家",
         tip: "先掌握航电页面、雷达模式和 CASE I 着舰，再扩展到精确武器。",
         accent: "#79e28f",
+        poster: "https://www.digitalcombatsimulator.com/upload/iblock/4bb/7ldemwsjoi1wdszs5piaukd6fvz41915/DCS_2.8_World_Combat_Flight_Simulator_F_A-18C-05.jpg",
+        source: "https://www.digitalcombatsimulator.com/en/products/planes/hornet/",
         tags: ["舰载", "BVR", "SEAD", "精确打击"],
         summary: "舰载多用途平台，适合从航母起降、BVR、精确对地和 SEAD 任务入门到进阶。",
         stats: { speed: 78, agility: 76, avionics: 92, strike: 90, difficulty: 66 }
@@ -880,6 +911,8 @@
         pilot: "喜欢轻快座舱、快节奏 BVR 和防空压制的玩家",
         tip: "保持速度和态势，熟悉 HSD、雷达游标和 HARM 流程。",
         accent: "#6cced2",
+        poster: "https://www.digitalcombatsimulator.com/upload/iblock/cd2/dcs-world-f16c-viper-flight-simulator.jpg",
+        source: "https://www.digitalcombatsimulator.com/en/products/planes/viper/",
         tags: ["轻快", "BVR", "SEAD", "高速"],
         summary: "高速、敏捷、航电清晰，适合想把现代空战节奏飞得干净利落的玩家。",
         stats: { speed: 88, agility: 88, avionics: 90, strike: 82, difficulty: 72 }
@@ -895,6 +928,8 @@
         pilot: "喜欢双座协作、可变后掠翼和远程猎杀的玩家",
         tip: "管理能量，尊重机体惯性；有朋友当 RIO 会让体验完全变味。",
         accent: "#f1c252",
+        poster: "https://www.digitalcombatsimulator.com/upload/iblock/0d7/dcs-world-f-14-tomcat-32.jpg",
+        source: "https://www.digitalcombatsimulator.com/en/products/planes/tomcat/",
         tags: ["双座", "舰载", "Phoenix", "截击"],
         summary: "重量感、速度感和戏剧性都很强，AIM-54 让它拥有独特的远程压迫力。",
         stats: { speed: 92, agility: 68, avionics: 72, strike: 58, difficulty: 86 }
@@ -910,6 +945,8 @@
         pilot: "喜欢重型平台、夜间低空突防和双座分工的玩家",
         tip: "先把雷达、导航和武器页面拆开练，再做复杂航线突防。",
         accent: "#ef6b61",
+        poster: "https://www.digitalcombatsimulator.com/upload/iblock/83c/f2119crbgllut0xmm6s269nmwrfem21a/dcs-world-f-15e.jpg",
+        source: "https://www.digitalcombatsimulator.com/en/shop/modules/f-15e/",
         tags: ["双座", "重型", "对地", "全天候"],
         summary: "重型双座打击平台，擅长把大量传感器、燃油和武器带进纵深目标区。",
         stats: { speed: 90, agility: 64, avionics: 88, strike: 96, difficulty: 84 }
@@ -925,6 +962,8 @@
         pilot: "喜欢三角翼、简洁座舱和法式截击节奏的玩家",
         tip: "别把它当 F-16 飞，利用爬升、高空速度和瞬盘特性。",
         accent: "#8aa7ff",
+        poster: "https://www.digitalcombatsimulator.com/upload/iblock/0bf/DCS_M-2000_cover_700x1000_v3.jpg",
+        source: "https://www.digitalcombatsimulator.com/en/shop/modules/m2000c/",
         tags: ["三角翼", "截击", "Magic II", "简洁"],
         summary: "座舱逻辑清楚，机动特性鲜明，是现代航电与冷战气质之间的好入口。",
         stats: { speed: 84, agility: 82, avionics: 70, strike: 46, difficulty: 58 }
@@ -940,6 +979,8 @@
         pilot: "想体验现代轻型多用途战机和中文座舱信息流的玩家",
         tip: "把 MFD 逻辑和数据链吃透，它的现代武器会非常顺手。",
         accent: "#ff8f70",
+        poster: "https://www.digitalcombatsimulator.com/upload/iblock/876/JF17-Cover-700x1000.jpg",
+        source: "https://www.digitalcombatsimulator.com/en/shop/modules/thunder/",
         tags: ["轻型", "数据链", "对海", "现代"],
         summary: "轻型现代平台，航电直观、武器组合丰富，适合快速进入现代多任务节奏。",
         stats: { speed: 78, agility: 72, avionics: 86, strike: 86, difficulty: 62 }
@@ -955,6 +996,8 @@
         pilot: "喜欢大航程、红外搜索和高迎角机动的玩家",
         tip: "学会用 EOS、R-27 家族和机体能量优势制造先手。",
         accent: "#6aa0ff",
+        poster: "https://www.digitalcombatsimulator.com/upload/iblock/a8a/c61d3x413ug1x7ytucb2kg7pcynlpg5f/dcs-world-flight-simulator-25-su-27.jpg",
+        source: "https://www.digitalcombatsimulator.com/en/products/planes/su-27_flaming_cliffs/",
         tags: ["制空", "大航程", "IRST", "高机动"],
         summary: "大机体、大航程、大迎角，适合在辽阔空域里建立红方制空存在感。",
         stats: { speed: 86, agility: 84, avionics: 58, strike: 32, difficulty: 54 }
@@ -970,6 +1013,8 @@
         pilot: "喜欢短促爆发、头盔瞄准和近距格斗的玩家",
         tip: "油量和航程是约束，快速进入、快速脱离，不要拖成消耗战。",
         accent: "#b7e37c",
+        poster: "https://www.digitalcombatsimulator.com/upload/iblock/834/1a86zkk2wmv0yw52599bmmb1cjny27gr/dcs-world-flight-simulator-06-mig-29.jpg",
+        source: "https://www.digitalcombatsimulator.com/en/products/planes/mig-29_flaming_cliffs/",
         tags: ["头盔瞄准", "近距", "爆发", "红方"],
         summary: "短腿但凶狠，近距格斗压迫感强，是红方快刀型战机代表。",
         stats: { speed: 84, agility: 86, avionics: 56, strike: 34, difficulty: 56 }
@@ -985,6 +1030,8 @@
         pilot: "喜欢老派仪表、粗粝操作和刀尖飞行的玩家",
         tip: "提前计划航线和能量，别在低速里和第四代机讲道理。",
         accent: "#d5e16a",
+        poster: "https://www.digitalcombatsimulator.com/upload/iblock/228/yoyoscreen.jpg",
+        source: "https://www.digitalcombatsimulator.com/en/products/planes/mig21bis/",
         tags: ["冷战", "高速", "硬核", "拦截"],
         summary: "小、快、脾气大，座舱和武器都很原始，但成功拦截时成就感很高。",
         stats: { speed: 82, agility: 58, avionics: 34, strike: 38, difficulty: 88 }
@@ -1000,6 +1047,8 @@
         pilot: "想练基本飞行、炮战和目视格斗纪律的玩家",
         tip: "雷达很朴素，赢面来自高度、速度、视野和果断。",
         accent: "#f4d06f",
+        poster: "https://www.digitalcombatsimulator.com/upload/iblock/273/7jpjgblu6mdmigk571grglm1ws3oj7s5/Screen_200805_063337.jpg",
+        source: "https://www.digitalcombatsimulator.com/en/products/planes/tiger/",
         tags: ["冷战", "轻型", "炮战", "训练"],
         summary: "没有复杂航电保护你，所有胜负都回到能量、视野和基本功。",
         stats: { speed: 66, agility: 74, avionics: 30, strike: 42, difficulty: 52 }
@@ -1015,6 +1064,8 @@
         pilot: "喜欢双座老派重型战机、烟、速度和仪表负担的玩家",
         tip: "它不是轻盈格斗机，学会用速度、纵深和双座分工赢。",
         accent: "#c4c8bd",
+        poster: "https://www.digitalcombatsimulator.com/upload/iblock/a91/x34tmfih3pktrsxonrmyz8w1edfwibiz/dcs-world-flight-simulator-13-f-4e-phantom-ii.jpg",
+        source: "https://www.digitalcombatsimulator.com/en/products/planes/phantom/",
         tags: ["双座", "冷战", "重型", "战斗轰炸"],
         summary: "粗犷、快速、任务面宽，既能打空战也能把铁炸弹送到目标区。",
         stats: { speed: 86, agility: 54, avionics: 48, strike: 72, difficulty: 82 }
@@ -1030,6 +1081,8 @@
         pilot: "喜欢短距起降、海上前进基地和对地支援的玩家",
         tip: "喷口角度、重量和悬停控制是核心，先轻载练起降。",
         accent: "#9fc5a2",
+        poster: "https://www.digitalcombatsimulator.com/upload/iblock/652/DCS-AV-8B_700x1000_v2.jpg",
+        source: "https://www.digitalcombatsimulator.com/en/shop/modules/av8bna/",
         tags: ["V/STOL", "CAS", "海军陆战队", "对地"],
         summary: "不靠极速出彩，而靠部署方式和对地流程形成非常独特的任务体验。",
         stats: { speed: 54, agility: 58, avionics: 72, strike: 82, difficulty: 80 }
@@ -1114,7 +1167,9 @@
               </div>
             </div>
           </div>
-          <div class="mini-jet">${jetSvg(item.accent)}</div>
+          <div class="poster">
+            <img src="${item.poster}" alt="${item.name} DCS poster" loading="lazy">
+          </div>
           <p>${item.summary}</p>
           <div class="bars">${statBars(item.stats)}</div>
         </article>
@@ -1131,6 +1186,9 @@
       document.getElementById("selectedMission").textContent = item.mission;
       document.getElementById("detailTitle").textContent = item.name;
       document.getElementById("detailDescription").textContent = item.summary;
+      const poster = document.getElementById("detailPoster");
+      poster.src = item.poster;
+      poster.alt = `${item.name} DCS poster`;
       document.getElementById("detailMission").textContent = item.mission;
       document.getElementById("detailPilot").textContent = item.pilot;
       document.getElementById("detailTip").textContent = item.tip;
